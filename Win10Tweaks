@@ -1,5 +1,6 @@
 ##########
 # Win10 Initial Setup Script
+# Make sure -> Set-ExecutionPolicy RemoteSigned 
 ##########
 
 # Ask for elevated permissions if required
@@ -34,10 +35,16 @@ Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppHost"
 # Disable Bing Search in Start Menu
 Write-Host "Disabling Bing Search in Start Menu..."
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "BingSearchEnabled" -Type DWord -Value 0
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "AllowCortana" -Type DWord -Value 0
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "DisableWebSearch" -Type DWord -Value 1
 
 # Disable Start Menu suggestions
 Write-Host "Disabling Start Menu suggestions..."
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SystemPaneSuggestionsEnabled" -Type DWord -Value 0
+
+# Disable automatically installing suggested apps
+Write-Host "Disabling automatically installing suggested apps..."
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SilentInstalledAppsEnabled " -Type DWord -Value 0
 
 # Disable Location Tracking
 Write-Host "Disabling Location Tracking..."
@@ -131,6 +138,7 @@ Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\W
 #Turn driver updates off
 Write-Host "Turn driver updates off..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching" -Name "SearchOrderConfig " -Type DWord -Value 0
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "ExcludeWUDriversInQualityUpdate " -Type DWord -Value 1
 
 #Change DNS
 Write-Host "Changing and flushing the DNS..."
@@ -141,6 +149,14 @@ ipconfig.exe /renew 2>&1 | Out-Null
 ##########
 # UI Tweaks
 ##########
+
+# Higher wallpaper quality
+Write-Host "Setting wallpaper quality to 100..."
+Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "JPEGImportQuality" -Type DWord -Value 100
+
+# Enable auto complete in Explorer
+Write-Host "Enabling auto complete..."
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete" -Name "Append Completion" -Type String -Value "yes"
 
 # Disable Lock screen
 Write-Host "Disabling Lock screen..."
@@ -270,10 +286,10 @@ function unpin {  param(
     )
     try{
         if ($unpin.IsPresent){
-            ((New-Object -Com Shell.Application).NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').Items() | ?{$_.Name -eq $appname}).Verbs() | ?{$_.Name.replace('&','') -match 'From "Start" UnPin|Unpin from Start'} | %{$_.DoIt()}
+            ((New-Object -Com Shell.Application).NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').Items() | Where-Object{$_.Name -eq $appname}).Verbs() | Where-Object{$_.Name.replace('&','') -match 'From "Start" UnPin|Unpin from Start'} | Foreach-Object{$_.DoIt()}
             return "App '$appname' unpinned from Start"
         }else{
-            ((New-Object -Com Shell.Application).NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').Items() | ?{$_.Name -eq $appname}).Verbs() | ?{$_.Name.replace('&','') -match 'To "Start" Pin|Pin to Start'} | %{$_.DoIt()}
+            ((New-Object -Com Shell.Application).NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').Items() | Where-Object{$_.Name -eq $appname}).Verbs() | Where-Object{$_.Name.replace('&','') -match 'To "Start" Pin|Pin to Start'} | Foreach-Object{$_.DoIt()}
             return "App '$appname' pinned to Start"
         }
     }catch{
@@ -318,17 +334,14 @@ dism /online /Disable-Feature /FeatureName:internet-explorer-optional-amd64 /Qui
 #Markc Mouse Fix
 Write-Host "Fixing mouse sensitivity..."
 Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseSensitivity" -Type DWord -Value 10
-$XCurve = [byte[]](0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,`
-	0xC0,0xCC,0x0C,0x00,0x00,0x00,0x00,0x00,`
-	0x80,0x99,0x19,0x00,0x00,0x00,0x00,0x00,`
-	0x40,0x66,0x26,0x00,0x00,0x00,0x00,0x00,`
-	0x00,0x33,0x33,0x00,0x00,0x00,0x00,0x00)
-$YCurve = [byte[]](
-	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,`
-	0x00,0x00,0x38,0x00,0x00,0x00,0x00,0x00,`
-	0x00,0x00,0x70,0x00,0x00,0x00,0x00,0x00,`
-	0x00,0x00,0xA8,0x00,0x00,0x00,0x00,0x00,`
-	0x00,0x00,0xE0,0x00,0x00,0x00,0x00,0x00)
+$XCurve = [byte[]](0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0xCC, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x80, 0x99, 0x19, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x66, 0x26, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x33, 0x33, 0x00, 0x00, 0x00, 0x00, 0x00)
+$YCurve = [byte[]](0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x38, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x70, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xA8, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0x00, 0x00, 0x00, 0x00, 0x00)
 Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "SmoothMouseXCurve" -Value $XCurve
 Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "SmoothMouseYCurve" -Value $XYurve
 Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseSpeed" -Type String -Value "0"
