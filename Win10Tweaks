@@ -431,7 +431,7 @@ function Delete() {
     Remove-Item $Path
 	Remove-Item C:\Users\$env:username\Desktop\AfterFormat -Force -Recurse
     write-host  "Deleted"
-            } 
+    } 
 
 ##########
 # Restart
