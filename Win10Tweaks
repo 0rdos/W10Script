@@ -3,7 +3,7 @@
 # Make sure -> Set-ExecutionPolicy RemoteSigned 
 ##########
 
-# Ask for elevated permissions if required
+# Ask For Elevated Permissions if Required
 If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")) {
 	Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
 	Exit
@@ -32,17 +32,17 @@ Write-Host "Disabling SmartScreen Filter..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name "SmartScreenEnabled" -Type String -Value "Off"
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppHost" -Name "EnableWebContentEvaluation" -Type DWord -Value 0
 
-# Disable Bing Search in Start Menu
-Write-Host "Disabling Bing Search in Start Menu..."
+# Disable Bing Search In Start Menu
+Write-Host "Disabling Bing Search In Start Menu..."
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "BingSearchEnabled" -Type DWord -Value 0
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "AllowCortana" -Type DWord -Value 0
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "DisableWebSearch" -Type DWord -Value 1
 
-# Disable Start Menu suggestions
+# Disable Start Menu Suggestions
 Write-Host "Disabling Start Menu suggestions..."
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SystemPaneSuggestionsEnabled" -Type DWord -Value 0
 
-# Disable automatically installing suggested apps
+# Disable Automatically Installing Suggested Apps
 Write-Host "Disabling automatically installing suggested apps..."
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SilentInstalledAppsEnabled " -Type DWord -Value 0
 
@@ -65,16 +65,16 @@ If (!(Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo
 }
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Type DWord -Value 0
 
-# Restrict Windows Update P2P only to local network
-Write-Host "Restricting Windows Update P2P only to local network..."
+# Restrict Windows Update P2P Only To Local Network
+Write-Host "Restricting Windows Update P2P Only To Local Network..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config" -Name "DODownloadMode" -Type DWord -Value 0
 If (!(Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization")) {
 	New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization" | Out-Null
 }
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization" -Name "SystemSettingsDownloadMode" -Type DWord -Value 3
 
-# Remove AutoLogger file and restrict directory
-Write-Host "Removing AutoLogger file and restricting directory..."
+# Remove AutoLogger File and Restrict Directory
+Write-Host "Removing AutoLogger File and Restricting Directory..."
 $autoLoggerDir = "$env:PROGRAMDATA\Microsoft\Diagnosis\ETLLogs\AutoLogger"
 If (Test-Path "$autoLoggerDir\AutoLogger-Diagtrack-Listener.etl") {
 	Remove-Item "$autoLoggerDir\AutoLogger-Diagtrack-Listener.etl"
@@ -86,7 +86,7 @@ Write-Host "Stopping and disabling Diagnostics Tracking Service..."
 Stop-Service "DiagTrack"
 Set-Service "DiagTrack" -StartupType Disabled
 
-# Stop and disable WAP Push Service
+# Stop and Disable WAP Push Service
 Write-Host "Stopping and disabling WAP Push Service..."
 Stop-Service "dmwappushservice"
 Set-Service "dmwappushservice" -StartupType Disabled
@@ -95,31 +95,31 @@ Set-Service "dmwappushservice" -StartupType Disabled
 # Service Tweaks
 ##########
 
-# Lower UAC level
-Write-Host "Lowering UAC level..."
+# Lower UAC Level
+Write-Host "Lowering UAC Level..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "ConsentPromptBehaviorAdmin" -Type DWord -Value 0
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "PromptOnSecureDesktop" -Type DWord -Value 0
 
-# Enable sharing mapped drives between users
-Write-Host "Enabling sharing mapped drives between users..."
+# Enable Sharing Mapped Drives Between Users
+Write-Host "Enabling Sharing Mapped Drives Between Users..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLinkedConnections" -Type DWord -Value 1
 
-# Disable implicit administrative shares
-Write-Host "Disabling implicit administrative shares..."
+# Disable Implicit Administrative Shares
+Write-Host "Disabling Implicit Administrative Shares..."
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "AutoShareWks" -Type DWord -Value 0
 
-# Disable offering of Malicious Software Removal Tool through Windows Update
-Write-Host "Disabling Malicious Software Removal Tool offering..."
+# Disable Offering Of Malicious Software Removal Tool Through Windows Update
+Write-Host "Disabling Offering Of Malicious Software Removal Tool Through Windows Update..."
 If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\MRT")) {
 	New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\MRT" | Out-Null
 }
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\MRT" -Name "DontOfferThroughWUAU" -Type DWord -Value 1
 
-# Disable Windows Update automatic restart
-Write-Host "Disabling Windows Update automatic restart..."
+# Disable Windows Update Automatic Restart
+Write-Host "Disabling Windows Update Automatic Restart..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" -Name "UxOption" -Type DWord -Value 1
 
-# Stop and disable Home Groups services
+# Stop and Disable Home Groups Services
 Write-Host "Stopping and disabling Home Groups services..."
 Stop-Service "HomeGroupListener"
 Set-Service "HomeGroupListener" -StartupType Disabled
@@ -135,13 +135,16 @@ Write-Host "Enabling Remote Desktop w/o Network Level Authentication..."
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Type DWord -Value 0
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "UserAuthentication" -Type DWord -Value 0
 
-#Turn driver updates off
-Write-Host "Turn driver updates off..."
+#Turn Driver Updates Off
+Write-Host "Turn Driver Updates Off..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching" -Name "SearchOrderConfig " -Type DWord -Value 0
+If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate")) {
+	New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" | Out-Null
+}
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "ExcludeWUDriversInQualityUpdate " -Type DWord -Value 1
 
 #Change DNS
-Write-Host "Changing and flushing the DNS..."
+Write-Host "Changing And Flushing The DNS..."
 Set-DnsClientServerAddress -InterfaceIndex 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 15, 17, 18, 19, 20 -ServerAddresses ("37.235.1.174","37.235.1.177") 2>&1 | Out-Null
 ipconfig.exe /flushdns 2>&1 | Out-Null
 ipconfig.exe /renew 2>&1 | Out-Null
@@ -150,22 +153,22 @@ ipconfig.exe /renew 2>&1 | Out-Null
 # UI Tweaks
 ##########
 
-# Higher wallpaper quality
-Write-Host "Setting wallpaper quality to 100..."
+# Raise The Wallpaper Quality
+Write-Host "Raising The Wallpaper Quality..."
 Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "JPEGImportQuality" -Type DWord -Value 100
 
-# Enable auto complete in Explorer
-Write-Host "Enabling auto complete..."
+# Enable Auto Complete In Explorer
+Write-Host "Enabling Auto Complete In Explorer..."
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete" -Name "Append Completion" -Type String -Value "yes"
 
-# Disable Lock screen
-Write-Host "Disabling Lock screen..."
+# Disable Lock Screen
+Write-Host "Disabling Lock Screen..."
 If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization")) {
 	New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization" | Out-Null
 }
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization" -Name "NoLockScreen" -Type DWord -Value 1
 
-# Disable Lock screen (Anniversary Update workaround)
+# Disable Lock Lcreen (Anniversary Update Workaround)
 If ([System.Environment]::OSVersion.Version.Build -gt 14392) { # Apply only for Redstone 1 or newer
 	$service = New-Object -com Schedule.Service
 	$service.Connect()
@@ -184,62 +187,63 @@ If ([System.Environment]::OSVersion.Version.Build -gt 14392) { # Apply only for 
 Write-Host "Disabling Autoplay..."
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers" -Name "DisableAutoplay" -Type DWord -Value 1
 
-# Disable Autorun for all drives
-Write-Host "Disabling Autorun for all drives..."
+# Disable Autorun For All Drives
+Write-Host "Disabling Autorun For All Drives..."
 If (!(Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer")) {
 	New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" | Out-Null
 }
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoDriveTypeAutoRun" -Type DWord -Value 255
 
-# Disable Sticky keys prompt
-Write-Host "Disabling Sticky keys prompt..."
+# Disable Sticky Keys Prompt
+Write-Host "Disabling Sticky Keys Prompt..."
 Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\StickyKeys" -Name "Flags" -Type String -Value "506"
 
-# Hide Search button / box
-Write-Host "Hiding Search Box / Button..."
+# Hide Search Box/Button
+Write-Host "Hiding Search Box/Button..."
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -Type DWord -Value 0
 
-# Hide Task View button
-Write-Host "Hiding Task View button..."
+# Hide Task View Button
+Write-Host "Hiding Task View Button..."
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowTaskViewButton" -Type DWord -Value 0
 
-# Show hidden files
-Write-Host "Showing hidden files..."
+# Show Hidden Files
+Write-Host "Showing Hidden Files..."
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Hidden" -Type DWord -Value 1
 
-# Change default Explorer view to This PC
-Write-Host "Changing default Explorer view to This PC..."
+# Change Default Explorer View To This PC
+Write-Host "Changing Default Explorer View To This PC..."
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "LaunchTo" -Type DWord -Value 1
 
-# Show This PC shortcut on desktop
-Write-Host "Showing This PC shortcut on desktop..."
+# Show This PC Shortcut On Desktop
+Write-Host "Showing This PC Shortcut On Desktop..."
 If (!(Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu")) {
 	New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" | Out-Null
 }
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Name "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" -Type DWord -Value 0
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" -Type DWord -Value 0
 
-# Show User Folder on dekstop
+# Show User Folder On Dekstop
+Write-Host "Showing User Folder On Dekstop..."
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Type DWord -Value 0
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Type DWord -Value 0
 
-# Remove Documents icon from This PC
-Write-Host "Removing Documents icon from This PC..."
+# Remove Documents Icon From This PC
+Write-Host "Removing Documents Icon From This PC..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{f42ee2d3-909f-4907-8871-4c22fc0bf756}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{f42ee2d3-909f-4907-8871-4c22fc0bf756}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
 
 # Remove Music icon from This PC
-Write-Host "Removing Music icon from This PC..."
+Write-Host "Removing Music Icon From This PC..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{a0c69a99-21c8-4671-8703-7934162fcf1d}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{a0c69a99-21c8-4671-8703-7934162fcf1d}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
 
 # Remove Pictures icon from This PC
-Write-Host "Removing Pictures icon from This PC..."
+Write-Host "Removing Pictures Icon From This PC..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{0ddd015d-b06c-45d5-8c4c-f59713854639}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{0ddd015d-b06c-45d5-8c4c-f59713854639}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
 
-# Enable NumLock after startup
-Write-Host "Enabling NumLock after startup..."
+# Enable NumLock After Startup
+Write-Host "Enabling NumLock After Startup..."
 If (!(Test-Path "HKU:")) {
 	New-PSDrive -Name HKU -PSProvider Registry -Root HKEY_USERS | Out-Null
 }
@@ -251,16 +255,16 @@ Set-ItemProperty -Path "HKU:\S-1-5-20\Control Panel\Keyboard" -Name "InitialKeyb
 Write-Host "Disable Error Reporting..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting" -Name "Disabled" -Type DWord -Value 00000001
 
-# Faster menu delay
-Write-Host "Changing menu delay..."
+# Faster Menu Delay
+Write-Host "Changing Menu Delay..."
 Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "MenuShowDelay" -Type String -Value "50"
 
-# Adjust for best appearance
-Write-Host "Adjust for best appearance..."
+# Adjust For Best Appearance
+Write-Host "Adjusting For Best Appearance..."
 New-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects' -Name VisualFXSetting -PropertyType DWORD -Value 1 -Force 2>&1 | Out-Null
 
-# Stop app suggestion
-Write-Host "Stopping app suggestion..."
+# Stop App Suggestion
+Write-Host "Stopping App Suggestion..."
 If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Cloud Content")) {
 	New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Cloud Content" | Out-Null
 }
@@ -274,12 +278,12 @@ Set-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "Disab
 # Remove unwanted applications
 ##########
 
-# Uninstall default Microsoft applications
-Write-Host "Uninstalling default Microsoft applications..."
+# Uninstall Default Microsoft Applications
+Write-Host "Uninstalling Default Microsoft Applications..."
 Get-AppxPackage -AllUsers | where-object {$_.name -notlike "*store*"} | Remove-AppxPackage 2>&1 | Out-Null
 
-# Unpin apps from the start menu
-Write-Host "Unpinning apps from the start menu..."
+# Unpin Apps From The Start Menu
+Write-Host "Unpinning Apps From The Start Menu..."
 function unpin {  param(
         [string]$appname,
         [switch]$unpin
@@ -301,6 +305,7 @@ unpin "Connect" -unpin
 unpin "Microsoft Edge" -unpin
 
 # Disable Xbox DVR
+Write-Host "Disablng Xbox DVR"
 If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR")) {
 	New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" | Out-Null
 }
@@ -332,7 +337,7 @@ dism /online /Disable-Feature /FeatureName:internet-explorer-optional-amd64 /Qui
 ##########
 
 #Markc Mouse Fix
-Write-Host "Fixing mouse sensitivity..."
+Write-Host "installing Markc Mouse Fix..."
 Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseSensitivity" -Type DWord -Value 10
 $XCurve = [byte[]](0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0xCC, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -357,22 +362,23 @@ Set-ItemProperty -Path "HKU:\.DEFAULT\Control Panel\Mouse" -Name "MouseThreshold
 # Download Ninite
 Write-Host "Downloading Ninite ..."
 $url = "https://ninite.com/.net4.6.2-air-chrome-firefox-foobar-gimp-inkscape-irfanview-java8-klitecodecs-libreoffice-notepadplusplus-paint.net-peazip-qbittorrent-shockwave-silverlight-spotify-steam-sumatrapdf-vscode/ninite.exe"
-$output = "C:\Users\$env:username\Desktop\AfterFormat\Ninite.exe"
+$output = "C:\Users\$env:username\Desktop\Ninite.exe"
 Invoke-WebRequest $url -OutFile $output
 
-# Download Hosts file
-Write-Host "Downloading Hosts file..."
+# Download Hosts File
+Write-Host "Downloading Hosts File..."
 $url = "http://winhelp2002.mvps.org/hosts.txt"
-$output = "C:\Users\$env:username\Desktop\AfterFormat\hosts"
+$output = "C:\Users\$env:username\Desktop\hosts"
 Invoke-WebRequest $url -OutFile $output
 
-# Changing Hosts file
-Write-Host "Changing Hosts file..."
+# Changing Hosts File
+Write-Host "Changing Hosts File..."
 Rename-Item "C:\Windows\System32\drivers\etc\hosts" HOSTS.MVP 2>&1 | Out-Null
-Copy-Item "C:\Users\$env:username\Desktop\AfterFormat\hosts" -Destination "C:\Windows\System32\drivers\etc\hosts" 2>&1 | Out-Null
+Copy-Item "C:\Users\$env:username\Desktop\hosts" -Destination "C:\Windows\System32\drivers\etc\hosts" 2>&1 | Out-Null
+Remove-Item C:\Users\$env:username\Desktop\hosts
 
-# Create links file
-Write-Host "Creating links file..."
+# Create Links File
+Write-Host "Creating Links File..."
 New-Item C:\Users\$env:username\Desktop\Links.txt -type file -value "DDU								https://goo.gl/kjadrs
 Old AMD 16.5.3 Hotfix			https://goo.gl/1g8YQG
 AMD Latest						https://goo.gl/aaliln
@@ -392,45 +398,46 @@ PushBullet						https://goo.gl/1Fi8RC
 UPlay							https://goo.gl/AdlN4o
 Origin							https://goo.gl/25734z" 2>&1 | Out-Null
 
-# Install programs
-Write-Host "Installing programs..."
-Start-Process -FilePath "C:\Users\$env:username\Desktop\AfterFormat\OldCalc.exe" -ArgumentList "/S /silent /s" 2>&1 | Out-Null
-Start-Process -FilePath "C:\Users\$env:username\Desktop\AfterFormat\Ninite.exe" -Wait -Verb runas 2>&1 | Out-Null
+# Install Programs
+Write-Host "Installing Programs..."
+Start-Process -FilePath "C:\Users\$env:username\Desktop\OldCalc.exe" -ArgumentList "/S /silent /s" 2>&1 | Out-Null
+Start-Process -FilePath "C:\Users\$env:username\Desktop\Ninite.exe" -Wait -Verb runas 2>&1 | Out-Null
+Remove-Item C:\Users\$env:username\Desktop\OldCalc.exe
 
-# Change program association
-Write-Host "Changing program association..."
-Dism.exe /Online /Import-DefaultAppAssociations:C:\Users\$env:username\Desktop\AfterFormat\AppAssociations.xml  2>&1 | Out-Null
+# Change Program Association
+Write-Host "Changing Program Association..."
+Dism.exe /Online /Import-DefaultAppAssociations:C:\Users\$env:username\Desktop\AppAssociations.xml  2>&1 | Out-Null
+Remove-Item C:\Users\$env:username\Desktop\AppAssociations.xml
 
 # Copy Ninite
 Write-Host "Copying Ninite..."
 New-Item C:\task\ -type directory 2>&1 | Out-Null
 Copy-Item Ninite.exe C:\Task\ 2>&1 | Out-Null
+Remove-Item C:\Users\$env:username\Desktop\Ninite.exe
 
 # Create a schedule task
-Write-Host "Creating a schedule task..."
+Write-Host "Creating A Schedule Task..."
 $taskname = "Ninite"
 $descreption = "Update your Apps!"
 $action = New-ScheduledTaskAction -Execute "C:\Task\Ninite.exe"
 $trigger =  New-ScheduledTaskTrigger -Weekly -WeeksInterval 2 -DaysOfWeek Sunday -At 3am
 Register-ScheduledTask -TaskName $taskname -Action $action -Trigger $trigger -Description $descreption 2>&1 | Out-Null
 
-# Enable F8 boot menu options
-Write-Host "Enabling F8 boot menu options..."
+# Enable F8 Boot Menu Options
+Write-Host "Enabling F8 Boot Menu Options..."
 bcdedit /set `{current`} bootmenupolicy Legacy | Out-Null
 
-# Rename your PC
-Write-Host "Renaming your PC..."
-Rename-Computer -NewName "YOUR_USERNAME" 2>&1 | Out-Null
+# Rename The PC
+Write-Host "Renaming The PC..."
+Rename-Computer -NewName "YourUsername" 2>&1 | Out-Null
 
 # Delete Files
-function Delete() {
-    Get-ChildItem $env:tmp -Recurse | Remove-Item -Recurse -force -ErrorAction SilentlyContinue
-    $Invocation = (Get-Variable MyInvocation -Scope 1).Value
-    $Path =  $Invocation.MyCommand.Path 
-    Write-Host $Path 
-    Remove-Item $Path
-	Remove-Item C:\Users\$env:username\Desktop\AfterFormat -Force -Recurse
-    write-host  "Deleted"
+	$tempfolders = @("C:\Windows\Temp\*", "C:\Windows\Prefetch\*", "C:\Documents and Settings\*\Local Settings\temp\*", "C:\Users\*\Appdata\Local\Temp\*")
+	Remove-Item $tempfolders -force -recurse 2>&1 | Out-Null
+	function Delete() {
+		$Invocation = (Get-Variable MyInvocation -Scope 1).Value
+		$Path =  $Invocation.MyCommand.Path  
+		Remove-Item $Path
     } 
 
 ##########
@@ -438,7 +445,7 @@ function Delete() {
 ##########
 
 Write-Host
-Write-Host "Press any key to restart your system..." -ForegroundColor Black -BackgroundColor White
+Write-Host "Press Any Key To Restart Your System..." -ForegroundColor Black -BackgroundColor White
 $key = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 Delete
 Write-Host "Restarting..."
