@@ -122,8 +122,8 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\MRT" -Name "DontOfferT
 # Disable Windows Update Automatic Restart
 Write-Host "Disabling Windows Update Automatic Restart..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" -Name "UxOption" -Type DWord -Value 1
-If (!(Test-Path "HKCU:\HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU")) {
-	New-Item -Path "HKCU:\HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Force | Out-Null
+If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU")) {
+	New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Force | Out-Null
 }
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoRebootWithLoggedOnUsers" -Type DWord -Value 1
 
@@ -160,6 +160,22 @@ ipconfig.exe /renew 2>&1 | Out-Null
 ##########
 # UI Tweaks
 ##########
+
+# Disable "You have new apps that can open this type of file"
+Write-Host "Disabling You Have New Apps That Can Open This Type Of File"
+Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\Explorer" -Name "NoNewAppAlert" -Type DWord -Value 1
+
+# Disable Look For An App In The Store
+Write-Host "Disabling Look For An App In The Store..."
+Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\Explorer" -Name "NoUseStoreOpenWith" -Type DWord -Value 1
+
+# Enable Dark Mode
+Write-Host "Enabling Dark Mode..."
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Type DWord -Value 0
+If (!(Test-Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize")) {
+	New-Item -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" | Out-Null
+}
+Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "Append Completion" -Type String -Value "yes"
 
 # Raise The Wallpaper Quality
 Write-Host "Raising The Wallpaper Quality..."
@@ -235,8 +251,18 @@ Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer
 
 # Show User Folder On Dekstop
 Write-Host "Showing User Folder On Dekstop..."
+If (!(Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu")) {
+	New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" | Out-Null
+}
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Type DWord -Value 0
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Type DWord -Value 0
+
+# Add Recycle Bin To Navigation Pane
+Write-Host "Adding Recycle Bin To Navigation Pane..."
+If (!(Test-Path "HKCU:\Software\Classes\CLSID\{645FF040-5081-101B-9F08-00AA002F954E}")) {
+	New-Item -Path "HKCU:\Software\Classes\CLSID\{645FF040-5081-101B-9F08-00AA002F954E}" | Out-Null
+}
+Set-ItemProperty -Path "HKCU:\Software\Classes\CLSID\{645FF040-5081-101B-9F08-00AA002F954E}" -Name "System.IsPinnedToNameSpaceTree" -Type DWord -Value 1
 
 # Enable NumLock After Startup
 Write-Host "Enabling NumLock After Startup..."
@@ -250,6 +276,8 @@ Set-ItemProperty -Path "HKU:\S-1-5-20\Control Panel\Keyboard" -Name "InitialKeyb
 # Disable Error Reporting
 Write-Host "Disable Error Reporting..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting" -Name "Disabled" -Type DWord -Value 00000001
+Stop-Service "WerSvc"
+Set-Service "WerSvc" -StartupType Disabled
 
 # Faster Menu Delay
 Write-Host "Changing Menu Delay..."
@@ -261,10 +289,7 @@ New-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer
 
 # Stop App Suggestion
 Write-Host "Stopping App Suggestion..."
-If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Cloud Content")) {
-	New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Cloud Content" | Out-Null
-}
-Set-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Cloud Content" "DisableWindowsConsumerFeatures" 1
+
 If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent")) {
 	New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" | Out-Null
 }
@@ -332,8 +357,8 @@ dism /online /Disable-Feature /FeatureName:internet-explorer-optional-amd64 /Qui
 # Extras
 ##########
 
-#Markc Mouse Fix
-Write-Host "installing Markc Mouse Fix..."
+# Markc Mouse Fix
+Write-Host "Installing Markc Mouse Fix..."
 Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseSensitivity" -Type DWord -Value 10
 If ((Get-ItemPropertyValue -Path "HKCU:\Control Panel\Desktop\WindowMetrics" -Name "AppliedDPI") -eq 96) {
 	$XCurve = [byte[]](0x00, 0x00, 0x00,0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0xCC, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00,0x80, 0x99, 0x19, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x66, 0x26, 0x00, 0x00,0x00, 0x00, 0x00, 0x00, 0x33, 0x33, 0x00, 0x00, 0x00, 0x00, 0x00)
@@ -411,16 +436,16 @@ Remove-Item C:\Users\$env:username\Desktop\AppAssociations.xml
 
 # Copy Ninite
 Write-Host "Copying Ninite..."
-New-Item C:\task\ -type directory 2>&1 | Out-Null
+New-Item C:\Task\ -type directory 2>&1 | Out-Null
 Copy-Item Ninite.exe C:\Task\ 2>&1 | Out-Null
 Remove-Item C:\Users\$env:username\Desktop\Ninite.exe
 
-# Create a schedule task
+# Create A Schedule Task
 Write-Host "Creating A Schedule Task..."
 $taskname = "Ninite"
 $descreption = "Update your Apps!"
 $action = New-ScheduledTaskAction -Execute "C:\Task\Ninite.exe"
-$trigger =  New-ScheduledTaskTrigger -Weekly -WeeksInterval 2 -DaysOfWeek Sunday -At 3am
+$trigger =  New-ScheduledTaskTrigger -Weekly -WeeksInterval 2 -DaysOfWeek Sunday -At 1pm
 Register-ScheduledTask -TaskName $taskname -Action $action -Trigger $trigger -Description $descreption 2>&1 | Out-Null
 
 # Enable F8 Boot Menu Options
@@ -429,7 +454,7 @@ bcdedit /set `{current`} bootmenupolicy Legacy | Out-Null
 
 # Rename The PC
 Write-Host "Renaming The PC..."
-Rename-Computer -NewName "YourUsername" 2>&1 | Out-Null
+Rename-Computer -NewName "JKaw" 2>&1 | Out-Null
 
 # Delete Files
 	$tempfolders = @("C:\Windows\Temp\*", "C:\Windows\Prefetch\*", "C:\Documents and Settings\*\Local Settings\temp\*", "C:\Users\*\Appdata\Local\Temp\*")
