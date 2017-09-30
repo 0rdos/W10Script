@@ -27,7 +27,7 @@ Write-Host "Disabling Telemetry..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name "AllowTelemetry" -Type DWord -Value 0
-#### For Insider builds change values 0 > 3 ####
+#### For Insider builds change values 0 to 3 ####
 
 # Disable Wi-Fi Sense
 Write-Host "Disabling Wi-Fi Sense..."
@@ -60,7 +60,7 @@ Write-Host "Disabling Location Tracking..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}" -Name "SensorPermissionState" -Type DWord -Value 0
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\lfsvc\Service\Configuration" -Name "Status" -Type DWord -Value 0
 
-# Disable automatic Maps updates
+# Disable Automatic Maps updates
 Write-Host "Disabling Automatic Maps Updates..."
 Set-ItemProperty -Path "HKLM:\SYSTEM\Maps" -Name "AutoUpdateEnabled" -Type DWord -Value 0
 
@@ -111,7 +111,7 @@ If (Test-Path "$autoLoggerDir\AutoLogger-Diagtrack-Listener.etl") {
 }
 icacls $autoLoggerDir /deny SYSTEM:`(OI`)`(CI`)F | Out-Null
 
-# Disabling Diagnostics Tracking Service
+# Disable Diagnostics Tracking Service
 Write-Host "Disabling Diagnostics Tracking Service..."
 Stop-Service "DiagTrack" -WarningAction SilentlyContinue
 Set-Service "DiagTrack" -StartupType Disabled
@@ -352,7 +352,6 @@ Get-Service -Name RemoteAccess | Set-Service -StartupType Disabled
 Get-Service -Name RemoteRegistry | Set-Service -StartupType Disabled
 Get-Service -Name SharedAccess | Set-Service -StartupType Disabled
 Get-Service -Name TrkWks | Set-Service -StartupType Disabled
-Get-Service -Name WMPNetworkSvc | Set-Service -StartupType Disabled
 
 # Disable Unneeded Scheduled Tasks
 Write-Host "Disabling Unneeded Scheduled Tasks..."
@@ -367,8 +366,8 @@ schtasks /Change /TN Microsoft\Windows\Windows Error Reporting\QueueReporting /D
 # UI Tweaks
 ##########
 
-# Show File Pperations Details
-Write-Host "Showing File Pperations Details..."
+# Show File Operations Details
+Write-Host "Showing File Operations Details..."
 If (!(Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\OperationStatusManager")) {
     New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\OperationStatusManager" | Out-Null
 }
@@ -701,6 +700,175 @@ Set-ItemProperty -Path "HKU:\.DEFAULT\Control Panel\Mouse" -Name "MouseSpeed" -T
 Set-ItemProperty -Path "HKU:\.DEFAULT\Control Panel\Mouse" -Name "MouseThreshold1" -Type String -Value "0"
 Set-ItemProperty -Path "HKU:\.DEFAULT\Control Panel\Mouse" -Name "MouseThreshold2" -Type String -Value "0"
 
+# Download And Change Hosts File
+Write-Host "Downloading And Changing Hosts File..."
+$url = "http://winhelp2002.mvps.org/hosts.txt"
+$output = "C:\Users\$env:username\Desktop\hosts"
+Invoke-WebRequest $url -OutFile $output
+Rename-Item "C:\Windows\System32\drivers\etc\hosts" HOSTS.MVP 2>&1 | Out-Null
+Copy-Item "C:\Users\$env:username\Desktop\hosts" -Destination "C:\Windows\System32\drivers\etc\hosts" 2>&1 | Out-Null
+Remove-Item C:\Users\$env:username\Desktop\hosts
+
+# Create Links File
+Write-Host "Creating Links File..."
+$AppsLinks = "HWiNFO64					https://goo.gl/ZAFfC3
+Nvidia Drivers				https://goo.gl/PNV9zt
+Snappy Driver Installer		https://goo.gl/CfgYiU"
+New-Item C:\Users\$env:username\Desktop\Links.txt -type file -value $AppsLinks 2>&1 | Out-Null
+
+# Install Programs
+Write-Host "Installing Programs..."
+New-Item C:\Task\ -type directory 2>&1 | Out-Null
+$url = "https://ninite.com/.net4.7-air-chrome-foobar-inkscape-irfanview-java8-klitecodecs-libreoffice-notepadplusplus-paint.net-peazip-qbittorrent-shockwave-silverlight-spotify-steam-vscode/ninite.exe"
+$output = "C:\Task\Ninite.exe"
+Invoke-WebRequest $url -OutFile $output
+Start-Process -FilePath "C:\Task\Ninite.exe" -Wait -Verb runas 2>&1 | Out-Null
+
+New-Item C:\Users\$env:username\Desktop\Programs\ -type directory 2>&1 | Out-Null
+
+# Install Air For Steam Skin
+$latestRelease = Invoke-WebRequest https://github.com/Outsetini/Air-for-Steam/releases/latest -Headers @{"Accept"="application/json"} -UseBasicParsing
+$json = $latestRelease.Content | ConvertFrom-Json
+$latestVersion = $json.tag_name
+$url = "https://github.com/outsetini/air-for-steam/archive/$latestVersion.zip"
+$output = "C:\Users\$env:username\Desktop\Programs\AirForSteam.zip"
+Invoke-WebRequest $url -OutFile $output -UseBasicParsing
+If (Test-Path -Path "C:\Program Files (x86)\Steam\skins") {
+	Expand-Archive "C:\Users\$env:username\Desktop\Programs\AirForSteam.zip" "C:\Program Files (x86)\Steam\skins" | Out-Null
+} else {
+	Expand-Archive "C:\Users\$env:username\Desktop\Programs\AirForSteam.zip" "C:\Users\$env:username\Desktop" | Out-Null
+}
+If (Test-Path -Path "C:\Program Files (x86)\Steam\skins\Air-for-Steam-$latestVersion\+Extras\Fonts\") {
+	$fontSourceFolder = "C:\Program Files (x86)\Steam\skins\Air-for-Steam-$latestVersion\+Extras\Fonts\"
+	$Shell = New-Object -ComObject Shell.Application
+	$SystemFontsFolder = $Shell.Namespace(0x14)
+	$FontFiles = Get-ChildItem $fontSourceFolder
+	$SystemFontsPath = $SystemFontsFolder.Self.Path
+	foreach($FontFile in $FontFiles) {
+		$targetPath = Join-Path $SystemFontsPath $FontFile.Name
+		if(Test-Path $targetPath){
+		}else{
+			$SystemFontsFolder.CopyHere($FontFile.fullname)
+		}
+	}
+}
+
+# Install Uplay
+$url = "http://ubi.li/4vxt9"
+$output = "C:\Users\$env:username\Desktop\Programs\UPlay.exe"
+Invoke-WebRequest $url -OutFile $output
+Start-Process -FilePath "C:\Users\$env:username\Desktop\Programs\UPlay.exe" -ArgumentList "/S /silent /s" 2>&1 | Out-Null
+
+# Install FireFox Nightly
+$url = "https://download.mozilla.org/?product=firefox-nightly-latest-ssl&os=win64&lang=en-US"
+$output = "C:\Users\$env:username\Desktop\Programs\FireFoxNightly.exe"
+Invoke-WebRequest $url -OutFile $output
+Start-Process -FilePath "C:\Users\$env:username\Desktop\Programs\FireFoxNightly.exe" -ArgumentList "/S /silent /s -ms" 2>&1 | Out-Null
+
+# Install PushBullet
+$url = "https://update.pushbullet.com/pushbullet_installer.exe"
+$output = "C:\Users\$env:username\Desktop\Programs\PushBullet.exe"
+Invoke-WebRequest $url -OutFile $output
+Start-Process -FilePath "C:\Users\$env:username\Desktop\Programs\PushBullet.exe" -ArgumentList "/S /silent /s" 2>&1 | Out-Null
+
+# Install EZ For Spotify
+New-Item C:\EZ\ -type directory 2>&1 -Force | Out-Null
+$url = "http://www.ericzhang.me/dl/?file=EZBlocker.php"
+$output = "C:\EZ\EZBlocker.exe"
+Invoke-WebRequest $url -OutFile $output
+If (!(Test-Path "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers")) {
+	New-Item -Path "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" -Force | Out-Null
+}
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" -Name "C:\EZ\EZBlocker.exe" -Type String -Value "~ RUNASADMIN"
+Start-Process -FilePath "C:\EZ\EZBlocker.exe"
+
+# Download MSI AfterBurner
+$url = "http://download.msi.com/uti_exe/vga/MSIAfterburnerSetup.zip"
+$output = "C:\Users\$env:username\Desktop\MSIAB.zip"
+Invoke-WebRequest $url -OutFile $output
+
+# Download AM4 Chipset Drivers
+$url = "https://www2.ati.com/drivers/amd-chipset-drivers.exe"
+$output = "C:\Users\$env:username\Desktop\AM4Chipset.exe"
+Invoke-WebRequest $url -OutFile $output
+
+# Download HP Printer Drivers
+$url = "http://ftp.hp.com/pub/softlib/software12/COL48444/al-117579-4/DJ2540_Basicx64_188.exe"
+$output = "C:\Users\$env:username\Desktop\HPDriver2540.exe"
+Invoke-WebRequest $url -OutFile $output
+
+# Download ProcessExplorer
+$url = "https://download.sysinternals.com/files/ProcessExplorer.zip"
+$output = "C:\Users\$env:username\Desktop\ProcessExplorer.zip"
+Invoke-WebRequest $url -OutFile $output
+
+# Download Samsung Magician
+$url = "http://www.samsung.com/semiconductor/minisite/ssd/downloads/software/Samsung_Magician_Installer.zip"
+$output = "C:\Users\$env:username\Desktop\SamsungMagician.zip"
+Invoke-WebRequest $url -OutFile $output
+
+# Change Program Association
+Write-Host "Changing Program Association..."
+$filePath = "C:\Users\$env:username\Desktop\AppAssociations.xml"
+$XmlWriter = New-Object System.XMl.XmlTextWriter($filePath,$Null)
+$XmlWriter.Formatting = "Indented"
+$XmlWriter.Indentation = "2"
+$XmlWriter.WriteStartDocument()
+$XmlWriter.WriteStartElement("DefaultAssociations")
+$XmlWriter.WriteStartElement("Association")  
+$XmlWriter.WriteAttributeString("Identifier", ".htm")
+$XmlWriter.WriteAttributeString("ProgId", "ChromeHTML")
+$XmlWriter.WriteAttributeString("ApplicationName", "Google Chrome")
+$XmlWriter.WriteEndElement()
+$XmlWriter.WriteStartElement("Association")  
+$XmlWriter.WriteAttributeString("Identifier", ".html")
+$XmlWriter.WriteAttributeString("ProgId", "ChromeHTML")
+$XmlWriter.WriteAttributeString("ApplicationName", "Google Chrome")
+$XmlWriter.WriteEndElement()
+$XmlWriter.WriteStartElement("Association")  
+$XmlWriter.WriteAttributeString("Identifier", "http")
+$XmlWriter.WriteAttributeString("ProgId", "ChromeHTML")
+$XmlWriter.WriteAttributeString("ApplicationName", "Google Chrome")
+$XmlWriter.WriteEndElement()
+$XmlWriter.WriteStartElement("Association")  
+$XmlWriter.WriteAttributeString("Identifier", "https")
+$XmlWriter.WriteAttributeString("ProgId", "ChromeHTML")
+$XmlWriter.WriteAttributeString("ApplicationName", "Google Chrome")
+$XmlWriter.WriteEndElement()
+$XmlWriter.WriteStartElement("Association")  
+$XmlWriter.WriteAttributeString("Identifier", ".htm")
+$XmlWriter.WriteAttributeString("ProgId", "ChromeHTML")
+$XmlWriter.WriteAttributeString("ApplicationName", "Google Chrome")
+$XmlWriter.WriteEndElement()
+$XmlWriter.WriteStartElement("Association")  
+$XmlWriter.WriteAttributeString("Identifier", ".jpg")
+$XmlWriter.WriteAttributeString("ProgId", "IrfanView.jpg")
+$XmlWriter.WriteAttributeString("ApplicationName", "IrfanView 32-bit")
+$XmlWriter.WriteEndElement()
+$XmlWriter.WriteStartElement("Association")  
+$XmlWriter.WriteAttributeString("Identifier", ".png")
+$XmlWriter.WriteAttributeString("ProgId", "IrfanView.png")
+$XmlWriter.WriteAttributeString("ApplicationName", "IrfanView 32-bit")
+$XmlWriter.WriteEndElement()
+$XmlWriter.WriteStartElement("Association")  
+$XmlWriter.WriteAttributeString("Identifier", ".txt")
+$XmlWriter.WriteAttributeString("ProgId", "Applications\notepad++.exe")
+$XmlWriter.WriteAttributeString("ApplicationName", "Notepad++ : a free (GNU) source code editor")
+$XmlWriter.WriteEndElement()
+$XmlWriter.WriteEndDocument()
+$XmlWriter.Flush()
+$XmlWriter.Close()
+Dism.exe /Online /Import-DefaultAppAssociations:C:\Users\$env:username\Desktop\AppAssociations.xml  2>&1 | Out-Null
+Remove-Item C:\Users\$env:username\Desktop\AppAssociations.xml
+
+# Create A Scheduled Task
+Write-Host "Creating A Scheduled Task..."
+$taskname = "Ninite"
+$descreption = "Update your Apps!"
+$action = New-ScheduledTaskAction -Execute "C:\Task\Ninite.exe"
+$trigger =  New-ScheduledTaskTrigger -Weekly -WeeksInterval 2 -DaysOfWeek Sunday -At 1pm
+Register-ScheduledTask -TaskName $taskname -Action $action -Trigger $trigger -Description $descreption 2>&1 | Out-Null
+
 # Enable F8 Boot Menu Options
 Write-Host "Enabling F8 Boot Menu Options..."
 bcdedit /set `{current`} bootmenupolicy Legacy | Out-Null
@@ -729,6 +897,6 @@ function Delete() {
 Write-Host
 Write-Host "Press Any Key To Restart Your System..." -ForegroundColor Black -BackgroundColor White
 $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-#Delete
+Delete
 Write-Host "Restarting..."
 Restart-Computer
