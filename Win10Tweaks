@@ -877,6 +877,10 @@ bcdedit /set `{current`} bootmenupolicy Legacy | Out-Null
 Write-Host "Opting Out Of DEP..."
 bcdedit /set `{current`} nx OptOut | Out-Null
 
+# Set The Time To Display The List Of OS To 0
+Write-Host "Setting The Time To Display The List Of OS To 0..."
+bcdedit /timeout 0
+
 # Rename The PC
 Write-Host "Renaming The PC..."
 Rename-Computer -NewName "JKaw" 2>&1 | Out-Null
